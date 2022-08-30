@@ -1,0 +1,30 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-wildcard-host
+spec:
+  rules:
+  - http:
+      paths:
+      - pathType: ImplementationSpecific
+        path: "/accounting/*"
+        backend:
+          service:
+            name: accounting-service
+            port:
+              number: 8001
+      - pathType: ImplementationSpecific
+        path: "/customercare/*"
+        backend:
+          service:
+            name: customer-care-service
+            port:
+              number: 8083
+      - pathType: ImplementationSpecific
+        path: "/catalog/*"
+        backend:
+          service:
+            name: catalogmanager-service
+            port:
+              number: 8081
+---

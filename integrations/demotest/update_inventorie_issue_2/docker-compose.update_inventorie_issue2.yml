@@ -1,0 +1,63 @@
+version: '3.5'
+services:
+  database:
+    container_name: "database"
+    image: polypet-postgresdb
+    expose:
+      - 5432
+    environment:
+      - POSTGRES_PASSWORD='password'
+
+
+  catalogue:
+    image: teamj-archi-cloud-catalogue-manager
+    container_name: teamj-archi-cloud-catalogue-manager
+    depends_on:
+      - database
+    environment:
+      - POSTGRES_SERVER_URL=database
+      - SERVER_PORT=8081
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://database:5432/cloudpolypetbackenddb
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_DATASOURCE_USERNAME=anas
+      - SPRING_DATASOURCE_PASSWORD=anas_69
+      - MONITOR_SITE_URL=http://teamj-archi-site-monitoring:8004
+      - SERVER_DNS_ADDRESS=http://teamj-archi-cloud-catalogue-manager:8081
+
+  sitemonitor:
+    image: 'teamj-archi-site-monitoring'
+    container_name: teamj-archi-site-monitoring
+    depends_on:
+      - database
+    environment:
+      - POSTGRES_SERVER_URL=database
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://database:5432/cloudpolypetsitemonitoringdb
+      - MONITOR_HOST=http://localhost
+      - SERVER_PORT=8004
+
+  partner_ultima:
+    image: 'teamj-archi-cloud-partner'
+    container_name: "polypet-j-ultima"
+    environment:
+      - PRODUCT={"name":"Medium Maxi Adult","category":"croquette","price":350}
+      - COMPANY_NAME=Ultima
+      - CURRENT_URL=http://polypet-j-ultima:5000
+      - PARTNER_HOST=http://teamj-archi-cloud-catalogue-manager:8081
+      - HOST=0.0.0.0
+      - PORT=5000
+    depends_on:
+      - catalogue
+    restart: always
+
+  
+
+  testrunner:
+    image: 'polypet_j_test_update_products_issue_2'
+    container_name: polypet_j_test_update_products_host_2
+    depends_on:
+      - catalogue
+      - partner_ultima
+    environment:
+      - PARTNER_1_HOST=http://polypet-j-ultima:5000
+      - BACKEND_HOST=http://teamj-archi-cloud-catalogue-manager:8081
+
